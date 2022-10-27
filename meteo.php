@@ -1,21 +1,25 @@
-<?php
-require_once __DIR__ . '/OpenWeather.php';
-$weather = new OpenWeather('ed7beff0087079db2d959f8563bc96b0');
-$forecast = $weather->getForcast('Montpellier,fr');
-$today = $weather->getToday('Montpellier,fr');
-require 'elements/header.php';
+<?php 
+// require_once 'class/OpenWeather.php';
+
+$weather = new OpenWeather('fd21127cb0bc28122fa5fe77d22ff605');
+$forecast = $weather->getForecast('arbois,fr');
+var_dump($forecast);
 ?>
 
-<div class = "container">
-    <ul>  
-        <li>En ce moment <?= $today['description'] ?> <?= $today['temp'] ?>°C</li>
-        <?php foreach ($forecast as $day): ?>
-        <li><?= $day['date']->format('d/m/y') ?> <?= $day['description'] ?> <?= $day['temp'] ?></li>
-        <?php endforeach; ?>
+
+<div class="container">
+    <ul>
+        <?php for ($i = 0; $i < count($forecast); $i+=8) : ?>
+        <li>
+            <img src="http://openweathermap.org/img/w/<?= $forecast[$i]['icon'] ?>.png" alt="">
+            <p><?= $forecast[$i]['temp'] ?>°C</p>
+            <p><?= $forecast[$i]['description'] ?></p>
+            <p><?= $forecast[$i]['date']->format('d/m/Y') ?></p>
+        </li>
+        <?php endfor ?>
     </ul>
 </div>
 
-<?php require 'elements/footer.php'; ?>
 
 
 

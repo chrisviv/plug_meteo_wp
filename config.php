@@ -132,34 +132,74 @@ if($communes === false){
 else{
     //Si tout est bon on va décoder le json, et on va dire true pour qu'il y ai un tableau associatif.
     $communes = json_decode($communes, true);
-
     
     if(isset($_GET['insertData'])){
         foreach ($communes as $commune) {
-            $communeainserer = new Data;
-            $communeainserer->insert($commune['code'], $commune['nom']);
-        }
-      
-    }
-    else{
-        $communes = new Data;
-        $datas = $communes->getAllCommunes();
-        foreach ($datas as $commune) {
-            echo "<li>".$commune['code']." - ".$commune['nom']."</li>";
-        }
-    }
-
-}
+            foreach ($communes as $commune) {
+                $cp = implode(",", $commune['codesPostaux']);
+                $ajouter = $conn->prepare('INSERT INTO communes (code, nom) VALUES (:code, :nom)');
+                $ajouter->bindParam(':code', $cp);
+                $ajouter->bindParam(':nom', $commune['nom']);
+                $ajouter->execute();
+                $ajouter->debugDumpParams();
+            }
 //On termine en fermant la session CURL libérant ainsi la mémoire qui lui était associé
 curl_close($curl);
+
+$conn = null;
+
+
+}
+register_activation_hook(__FILE__, 'initialisationPlugin');
+
+//Ici nous avons une fonction qui va supprimer une page si le plugin est désactivé
+function myplugin_deactivate()
+{
+    //Ici on récup_re l'id de la page que l'on a créé
+    $score_arr = get_page_by_title('Météo');
+    wp_delete_post($score_arr->ID, true);
+}
+
+
+register_deactivation_hook(__FILE__, 'myplugin_deactivate');
+
+/**
+ * Généation de la fonction pour traiter un shortcode en fonction d'une ville sélectionnée
+ *
+ * @param  mixed $ville
+ * @return string
+ */
+function shortcode_showWeather($ville)
+{
+    $s = isset($ville['ville']) ? $ville['ville'] : '';
+    $view =  getWeather($s);
+    return $view;
+}
+add_shortcode('meteo', 'shortcode_showWeather');
+
+
+/**
+ * Généation de la fonction pour traiter un shortcode en fonction d'une ville sélectionnée
+ *
+ * @param  mixed $ville
+ * @return string
+ */
+function shortcode_showWeatherPage($ville, $ressenti)
+{
+    $s = isset($ville['ville']) ? $ville['ville'] : '';
+    $views =  getWeatherPage($s, $ressenti);
+    return $views;
+   
+}
+add_shortcode('pagemeteo', 'shortcode_showWeatherPage');
+
+
+
 ?>
 
 <a href="?insertData">Insérer les données</a>
 
 
-
-
-/
 
 
 

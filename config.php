@@ -13,11 +13,15 @@ Author: Chris Vivancos
 Author URI: LIEN VERS VOTRE PAGE D’ACCUEIL 
 License: GPL 
 */
+require_once __DIR__ . '/Controllers/ControllersMeteoController.php';
 
  // defined('ABSPATH') or die('Oups !');
+
 /*
- **  Ajouter d'un nouveau menu à notre panel Admin
+ * Ajouter d'un nouveau menu à notre panel Admin
  */
+
+
 // On attache l'action monLienAdmin à admin_menu
 add_action('admin_menu', 'myPluginMeteo');
 
@@ -33,30 +37,72 @@ function myPluginMeteo()
         'dashicons-cloud',
     );
 }
-?>
 
 
-<?php 
+//Ici nous avons une fonction qui va ajouter une page si le plugin est activé
+function initialisationPlugin()
+{
+    //création de la table dans la BDD
+    global $wpbd;
+    $servername = $wpdb->dbhost;
+    $username = $wpdb->dbuser;
+    $password = $wpdb->dbpassword;
+    $dbname = $wpdb->dbname;
+    $port = $wpdb->dbport;
+    $conn = new PDO("mysql:host=$se rvername;port=$port;dbname=$dbname",$username, $password);
+    $createConn = $conn->prepare("DESCRIBE `meteo`");
+    if(!createConn->execute()){
+        $sql = "CREATE TABLE meteo (
+             id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            shortcode VARCHAR(30) NOT NULL,
+            ressenti VARCHAR(30) NULL,
+            tempmin VARCHAR(30) NULL,
+            tempmax VARCHAR(30) NULL,
+            humidite VARCHAR(30) NULL,
+            nebulosite VARCHAR(30) NULL,
+            vitessevent VARCHAR(30) NULL,
+            visibilite VARCHAR(30) NULL,
+            pecipitation VARCHAR(30) NULL
+         )";
+    }
+        $sqlcommune = $conn->prepare("DESCRIBE `communes`");
+
+        if (!$sqlcommune->execute()) {
+            $sqlcommunes = "CREATE TABLE communes (
+                id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                code INT(6) NOT NULL,
+                nom VARCHAR(30) NOT NULL
+                )";
+            $conn->exec($sql);
+            $conn->exec($sqlcommunes);
+    }
+
+    //On crée une page qui va contenir la météo détaillé
+    $weather_arr = array(
+        'post_title'   => 'Météo',
+        'post_content' => '[pagemeteo ville=""]',
+        'post_status'  => 'publish',
+        'post_type'    => 'page',
+        'post_author'  => get_current_user_id(),
+    );
+
+    wp_insert_post($weather_arr);
+
 // Le CURL c'est quoi?
 // cURL est une bibliothèque qui vous permet de faire des requêtes HTTP en PHP. 
-
 //Dans ce live Coding nous allons voir comment récupérer en php les informations issues d'une API et les stocker en base de données
-
 //https://geo.api.gouv.fr/decoupage-administratif
 //Traitement des données
-
 //Dans un premier temps nous allons récuperer toutes les régions de france
-// Tout d'abord il faut vérifier que la méthode CURL soit bien activé sur votre serveur.
-// Pour vérifier cela vous pouvez interroger votre serveur grace à un phpinfo()
+// Tout d'abord il faut vérifier que la méthode CURL soit bien activé sur votre serveur. Pour vérifier cela vous pouvez interroger votre serveur grace à un phpinfo()
 
 //phpinfo();
 //die;
 
 //Autoloader de Class 
-
-spl_autoload_register(function ($class_name) {
-include './class/'.$class_name . '.php';
-});
+// spl_autoload_register(function ($class_name) {
+// include './class/'.$class_name . '.php';
+// });
 
 // On utilisera principalement 4 méthodes
 // curl_init : pour initialiser notre curl
@@ -65,10 +111,11 @@ include './class/'.$class_name . '.php';
 // curl_close : pour fermer notre CURL
 
 // POUR LA BASE DE DONNEE PARTIE COMMUNES
-
+//hydratation des communes
+$supprimer = $conn->prepare('Delete from communes');
+$supprimer->execute();
 $curl = curl_init("https://geo.api.gouv.fr/communes");
-//Alors si l'on ne lui spécifie rien le curl_exec lancera le CURL et affichera le résultat.
-//Nous ce n'est pas totalement ce que nous souhaitons. 
+//Alors si l'on ne lui spécifie rien le curl_exec lancera le CURL et affichera le résultat.//Nous ce n'est pas totalement ce que nous souhaitons. 
 //Nous allors grace a curl_setopt lui dire que nous souhaitons enregistrer le résultat de ce CURL dans une variable
 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($curl, CURLOPT_CAINFO, "C:\wamp64\www\wordpress\wp-content\plugins\plug_meteo_wp\geo-communes.pem");

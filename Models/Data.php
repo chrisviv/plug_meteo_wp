@@ -1,5 +1,5 @@
 <?php 
-//session_start();
+require_once 'Database.php';
 
 
 class Data extends Database {

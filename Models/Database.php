@@ -6,7 +6,8 @@ abstract class Database {
     {
 
         try 
-        {   global $wpdb;
+        {   
+            global $wpdb;
             $servername = $wpdb->dbhost;
             $username = $wpdb->dbuser;
             $password = $wpdb->dbpassword;

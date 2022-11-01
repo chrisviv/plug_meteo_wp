@@ -5,7 +5,7 @@
 class Data extends Database {
 
     public function installBdd(){
-        global$wpdb;
+        global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
             $sq=" CREATE TABLE communes(id INT(6) AUTO_INCREMENT,code INT(6),nom VARCHAR(45),PRIMARY KEY(id))$charset_collate;";
 
@@ -14,6 +14,7 @@ class Data extends Database {
     }
         
     // public function getAllCommunes() {
+                //global $wpdb;
     //             CREATE TABLE communes(id INT(6) AUTO_INCREMENT,code INT(6),nom VARCHAR(45),PRIMARY KEY(id);
     //             $datas = $this->connect()->prepare("SELECT * FROM communes");
     //             $datas->execute();
